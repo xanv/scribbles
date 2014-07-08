@@ -6,6 +6,9 @@
 # It also serves as an example for how to find brute-force solutions for
 # more complex games where straightforward logic would not be possible.
 
+# This version does not take advantage of the symmetries of the tic-tac-toe
+# board. It is fine for 3x3 but too slow to handle a 4x4 tic-tac-toe board.
+
 # Xan Vongsathorn
 # 7/7/2014
 
@@ -45,23 +48,18 @@ class TicTacToe():
 
     
     def get_best_response(self, board):
-        "Return best response to board configuration"
+        "Return best response to board configuration."
         try:
             return self.best_responses[board][0]
         except KeyError:
-            self.initialize_best_responses()
+            self.build_best_responses()
             return self.best_responses[board][0]
-            
-    
-    def initialize_best_responses(self):
-        "Call once to completely populate best_responses"
-        initial_board = tuple([0]*self.SIZE)
-        initial_player = 1
-        self.build_best_responses(initial_board, initial_player)
-    
+                
 
-    def build_best_responses(self, board, player):
+    def build_best_responses(self, board=None, player=None):
         """Recursively compute best responses for all subgames of current board.
+        
+        Call with no arguments to build the entire best_responses dict.
         
         This adds a key to best_responses for each possible board configuration
         that could follow from board.
@@ -70,6 +68,11 @@ class TicTacToe():
         who gets the next move.
         """
 
+        # Initialize
+        if board is None:
+            board = tuple([0]*self.SIZE)
+            player = 1
+        
         if board in self.best_responses: 
             return
 
@@ -81,21 +84,19 @@ class TicTacToe():
                 
         # If we don't know the best response yet, compute it.
         best_value, best_move = -2, -2
-        for i in range(self.SIZE):
-            if board[i] == 0:
-                board1 = list(board)
-                board1[i] = player
-                board1 = tuple(board1)
+        for i, val in enumerate(board):
+            if val == 0:
+                # create new tuple with player's move in ith slot
+                board2 = board[:i] + (player,) + board[i+1:]
                 
-                # If board1 is already in best_responses, this does nothing.
-                # Otherwise, it adds board1 to best_responses.
-                self.build_best_responses(board1, -1 * player)
-                # The player's value given board1 is the reverse of the next 
+                # If board2 is already in best_responses, this does nothing.
+                # Otherwise, it ensures board2 is added to best_responses.
+                self.build_best_responses(board2, -1 * player)
+                # The player's value given board2 is the reverse of the next 
                 # player's value
-                value = -1 * self.best_responses[board1][1]
+                value = -1 * self.best_responses[board2][1]
                 if value > best_value:
                     best_value, best_move = value, i
-
         self.best_responses[board] = (best_move, best_value)
 
                     
@@ -106,10 +107,9 @@ class TicTacToe():
         is yet determined.
         """
         
-        # Could turn into an iterator.
         lines = ([self.get_row(board, i) for i in range(self.WIDTH)] +
-                   [self.get_col(board, i) for i in range(self.WIDTH)] +
-                   [self.get_diag(board, i) for i in range(self.NUM_DIAGS)]
+           [self.get_col(board, i) for i in range(self.WIDTH)] +
+           [self.get_diag(board, i) for i in range(self.NUM_DIAGS)]
         )
         
         # First check for win/loss, i.e. row/col/diag with three 1's or three -1's.
@@ -120,10 +120,8 @@ class TicTacToe():
                 # Transform winner to be +-1 from player's perspective, not X's:
                 return winner * (player == 1) - winner * (player == -1)
             
-        # If no winner or loser, return draw or None depending on whether
-        # the board is completely filled
-        if board.count(0) == 0: return 0
-        else: return None
+        if board.count(0) == 0: return 0 # draw
+        else: return None # game not over yet
                 
 
     def get_row(self, board, i):
@@ -145,6 +143,7 @@ class TicTacToe():
     
 
     
+    
 # Some sample tests, not very high coverage.    
 class TestTicTacToe():
     
@@ -152,7 +151,7 @@ class TestTicTacToe():
         print "\n---RUNNING TESTS---\n"
         
         self.test_check_win()
-        self.test_initialize_best_responses()
+        self.test_build_best_responses()
         
         print "\n---ALL TESTS PASS---\n"
     
@@ -175,12 +174,12 @@ class TestTicTacToe():
         print 'test_check_win passes'
 
 
-    def test_initialize_best_responses(self):
+    def test_build_best_responses(self):
         
         game = TicTacToe()
-        game.initialize_best_responses()
+        game.build_best_responses()
  
-        assert best_responses[(1,1,0, 0,-1,-1, 0,0,0)] == (2, 1)
+        assert game.best_responses[(1,1,0, 0,-1,-1, 0,0,0)] == (2, 1)
 
         # Since the solver has no preference for winning sooner rather than
         # later, it won't necessarily choose the move that ends the game
@@ -190,7 +189,7 @@ class TestTicTacToe():
         # But at least we can check that it DOES expect to win given such a board.
         assert game.best_responses[(1,0,0, 1,-1,-1, 0,0,0)][1] == 1
         
-        print 'test_initialize_best_responses passes'
+        print 'test_build_best_responses passes'
 
         
         
@@ -207,8 +206,15 @@ tests = TestTicTacToe()
 tests.test()
 
 
-tictactoe = TicTacToe(3)
-funtime(tictactoe.initialize_best_responses)
+print "Timing for WIDTH = 2..."
+tictactoe = TicTacToe(2)
+funtime(tictactoe.build_best_responses)
+print "Size of best_responses:", len(tictactoe.best_responses)
 
-    
+print "\n"
+
+print "Timing for WIDTH = 3..."
+tictactoe = TicTacToe(3)
+funtime(tictactoe.build_best_responses)
+print "Size of best_responses:", len(tictactoe.best_responses)
 
