@@ -6,8 +6,7 @@
 # It also serves as an example for how to find brute-force solutions for
 # more complex games where straightforward logic would not be possible.
 
-# This version does not take advantage of the symmetries of the tic-tac-toe
-# board. It is fine for 3x3 but too slow to handle a 4x4 tic-tac-toe board.
+# This version does not take advantage of the symmetries of the board.
 
 # Xan Vongsathorn
 # 7/7/2014
@@ -134,11 +133,9 @@ class TicTacToe():
 
     def get_diag(self, board, i):
         "Return main diagonal if i = 0, other diagonal if i = 1"
-        if i == 0:
-            # For WIDTH = 3, this gives board[j] for j = 0, 4, 8. 
+        if i == 0: 
             return [board[(self.WIDTH+1) * i] for i in range(self.WIDTH)]
         else:
-            # For WIDTH = 3, this gives board[j] for = 2, 4, 6.
             return [board[(self.WIDTH-1) + (self.WIDTH-1)*i] for i in range(self.WIDTH)]
     
 
@@ -201,20 +198,13 @@ def funtime(fun, *args):
     print "Runtime: ", t1-t0
 
 
+if __name__ == '__main__':
 
-tests = TestTicTacToe()
-tests.test()
+    tests = TestTicTacToe()
+    tests.test()
 
-
-print "Timing for WIDTH = 2..."
-tictactoe = TicTacToe(2)
-funtime(tictactoe.build_best_responses)
-print "Size of best_responses:", len(tictactoe.best_responses)
-
-print "\n"
-
-print "Timing for WIDTH = 3..."
-tictactoe = TicTacToe(3)
-funtime(tictactoe.build_best_responses)
-print "Size of best_responses:", len(tictactoe.best_responses)
+    print "Timing for WIDTH = 3..."
+    tictactoe = TicTacToe(3)
+    funtime(tictactoe.build_best_responses)
+    print "Size of best_responses:", len(tictactoe.best_responses)
 
