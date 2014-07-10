@@ -64,12 +64,12 @@ class TicTacToe():
         that could follow from board.
         
         player = 1 for X, -1 for O. This is the current player, i.e. the one
-        who gets the next move.
+        who goes next given the current board.
         """
 
         # Initialize
         if board is None:
-            board = tuple([0]*self.SIZE)
+            board = (0,) * self.SIZE
             player = 1
         
         if board in self.best_responses: 
@@ -82,7 +82,7 @@ class TicTacToe():
             return
                 
         # If we don't know the best response yet, compute it.
-        best_value, best_move = -2, -2
+        best_value = -2
         for i, val in enumerate(board):
             if val == 0:
                 # create new tuple with player's move in ith slot
