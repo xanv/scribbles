@@ -44,15 +44,6 @@ class TicTacToe():
         self.NUM_DIAGS = 2
 
         self.best_responses = {}
-
-    
-    def get_best_response(self, board):
-        "Return best response to board configuration."
-        try:
-            return self.best_responses[board][0]
-        except KeyError:
-            self.build_best_responses()
-            return self.best_responses[board][0]
                 
 
     def build_best_responses(self, board=None, player=None):
